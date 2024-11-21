@@ -11,8 +11,9 @@ EnvironmentConfig.LoadEnv();
 builder.Services.AddControllers();
 
 builder.Services
-    .AddRabbitMqServices()
+    .AddRabbitMqConnection()
     .AddRabbitMqChannel()
+    .AddRabbitMqServices()
     .AddProducerServices();
 
 // Swagger/OpenAPI

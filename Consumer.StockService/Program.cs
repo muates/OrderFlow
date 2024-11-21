@@ -14,12 +14,14 @@ EnvironmentConfig.LoadEnv();
 builder.Services.AddControllers();
 
 builder.Services
-    .AddRabbitMqServices()
+    .AddRabbitMqConnection()
     .AddRabbitMqChannel()
+    .AddRabbitMqServices()
     .AddRabbitMqMessageHandler<Order, StockMessageHandler>()
-    .AddRabbitMqBackgroundService<Order, RabbitMqConsumer<Order>>(
+    .AddRabbitMqConsumer<Order, RabbitMqConsumer<Order>>(
         queueName: RabbitMqConsumerConfigData.StockQueueName ?? string.Empty,
-        exchangeName: RabbitMqExchangeConfigData.OrderExchange ?? string.Empty);
+        exchangeName: RabbitMqExchangeConfigData.OrderExchange ?? string.Empty)
+    .AddRabbitMqHostedService();
 
 // Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();

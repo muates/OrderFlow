@@ -11,7 +11,7 @@ namespace SharedLibrary.Extension;
 
 public static class RabbitMqServiceCollectionExtensions
 {
-    public static IServiceCollection AddRabbitMqServices(this IServiceCollection services)
+    public static IServiceCollection AddRabbitMqConnection(this IServiceCollection services)
     {
         services.AddSingleton<IConnection>(provider =>
         {
@@ -19,6 +19,23 @@ public static class RabbitMqServiceCollectionExtensions
             return connection;
         });
 
+        return services;
+    }
+    
+    public static IServiceCollection AddRabbitMqChannel(this IServiceCollection services)
+    {
+        services.AddSingleton<IModel>(provider =>
+        {
+            var connection = provider.GetRequiredService<IConnection>();
+            var channel = connection.CreateModel();
+            return channel;
+        });
+
+        return services;
+    }
+    
+    public static IServiceCollection AddRabbitMqServices(this IServiceCollection services)
+    {
         services.AddSingleton<IMessageSender<Order>, RabbitMqMessageSender<Order>>();
 
         return services;
@@ -33,7 +50,7 @@ public static class RabbitMqServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddRabbitMqBackgroundService<TMessage, TConsumer>(
+    public static IServiceCollection AddRabbitMqConsumer<TMessage, TConsumer>(
         this IServiceCollection services, string queueName, string exchangeName)
         where TMessage : class
         where TConsumer : class, IRabbitMqConsumer
@@ -44,10 +61,14 @@ public static class RabbitMqServiceCollectionExtensions
             var handler = provider.GetRequiredService<IMessageHandler<TMessage>>();
             return ActivatorUtilities.CreateInstance<TConsumer>(provider, channel, queueName, exchangeName, handler);
         });
-        
-        services.AddHostedService<RabbitMqBackgroundService>();
 
         return services;
     }
-
+    
+    public static IServiceCollection AddRabbitMqHostedService(this IServiceCollection services)
+    {
+        services.AddHostedService<RabbitMqBackgroundService>();
+        
+        return services;
+    }
 }
